@@ -90,3 +90,22 @@ CREATE TABLE Todos (
         </set-body>
 	</response>
 </sql-data-source>
+
+// Mutation - deleteTodoItem
+<sql-data-source>
+	<connection-info>
+		<connection-string>{{SQLDbConnect}}</connection-string>
+	</connection-info>
+	<request>
+		<sql-statement>
+            DELETE FROM Todos WHERE Id = @ItemId  
+        </sql-statement>
+		<parameters>
+			<parameter name="@ItemId">       
+                @(context.GraphQL.Arguments["id"])
+            </parameter>
+		</parameters>
+	</request>
+	<response>
+	</response>
+</sql-data-source>
