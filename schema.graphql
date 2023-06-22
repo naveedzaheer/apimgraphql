@@ -1,0 +1,28 @@
+type TodoItem { 
+  id: ID! 
+  title: String! 
+  status: String! 
+} 
+
+input CreateTodoItemInput { 
+    id: ID! 
+    title: String! 
+    status: String! 
+} 
+
+input ReplaceTodoItemInput { 
+  id: ID! 
+  title: String! 
+  status: String! 
+} 
+
+type Query { 
+  todoItems: [TodoItem] 
+  todoItem(id: ID!): String 
+} 
+
+type Mutation { 
+  createTodoItem(input: CreateTodoItemInput!): TodoItem! 
+  replaceTodoItem(input: ReplaceTodoItemInput!): TodoItem! 
+  deleteTodoItem(id: ID!): String 
+} 

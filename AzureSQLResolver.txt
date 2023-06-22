@@ -1,0 +1,92 @@
+// Create an Azure SQL DB and create a table for the demo
+CREATE TABLE Todos (
+    Id varchar(255),
+    Title varchar(255),
+	Status varchar(255)
+);
+
+// Mutation - createTodoItem
+<sql-data-source>
+	<connection-info>
+		<connection-string>{{SQLDbConnect}}</connection-string>
+	</connection-info>
+	<request single-result="true">
+		<sql-statement>
+        IF EXISTS (SELECT * FROM dbo.Todos t WHERE t.Id = @id)
+            BEGIN
+                UPDATE dbo.Todos SET Title = @title, Status = @status WHERE Id = @id
+            END
+            ELSE
+            BEGIN
+                INSERT INTO dbo.Todos (Id, Title, Status) VALUES (@id, @title, @status)
+            END
+        SELECT t.Id AS id, t.Title as title, t.Status as status FROM dbo.Todos t WHERE t.Id = @id
+        </sql-statement>
+		<parameters>
+			<parameter name="@id">       
+                @(context.GraphQL.Arguments["input"]["id"].ToString())
+            </parameter>
+			<parameter name="@title">       
+                @(context.GraphQL.Arguments["input"]["title"].ToString())
+            </parameter>
+			<parameter name="@status">       
+                @(context.GraphQL.Arguments["input"]["status"])
+            </parameter>
+		</parameters>
+	</request>
+</sql-data-source>
+
+// Query - todoItem
+<sql-data-source>
+	<connection-info>
+		<connection-string>{{SQLDbConnect}}</connection-string>
+	</connection-info>
+	<request single-result="true">
+		<sql-statement>
+            SELECT 
+                t.[Id] AS [id],
+                t.[Title] AS [title],
+                t.[Status] AS [status]
+            FROM
+                Todos t
+            WHERE t.[Id] = @ItemId  
+        </sql-statement>
+		<parameters>
+			<parameter name="@ItemId">       
+                @(context.GraphQL.Arguments["id"])
+            </parameter>
+		</parameters>
+	</request>
+	<response>
+	</response>
+</sql-data-source>
+
+// Query - todoItems
+<sql-data-source>
+	<connection-info>
+		<connection-string>{{SQLDbConnect}}</connection-string>
+	</connection-info>
+	<request>
+		<sql-statement>
+            SELECT 
+                t.[Id] AS [id],
+                t.[Title] AS [title],
+                t.[Status] AS [status]
+            FROM
+                Todos t
+        </sql-statement>
+	</request>
+	<response>
+		<set-body template="liquid"> 
+            [ 
+                    
+                    {% for todo in body.items %} 
+                        {"id": "{{ todo.id }}", 
+                        "title": "{{ todo.title}}",
+                        "status": "{{ todo.status}}"}
+                        {% if forloop.last == false %},{% endif %} 
+                    {% endfor %} 
+                ] 
+        </set-body>
+	</response>
+</sql-data-source>

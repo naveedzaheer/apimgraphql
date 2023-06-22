@@ -1,0 +1,75 @@
+// Please create a Azure CosmosDB instance
+// Please use the schemacosmos.graphql for this one
+
+
+// Query - TodoItem
+<cosmosdb-data-source>
+	<connection-info>
+		<connection-string>{{CosmosDBConnectionString}}</connection-string>
+		<database-name>ToDoList</database-name>
+		<container-name>Todos</container-name>
+	</connection-info>
+	<read-request>
+		<id>@(context.GraphQL.Arguments["id"].ToString())</id>
+		<partition-key>@(context.GraphQL.Arguments["id"].ToString())</partition-key>
+	</read-request>
+</cosmosdb-data-source>
+
+//Query - TodoItems
+<cosmosdb-data-source>
+	<connection-info>
+		<connection-string>{{CosmosDBConnectionString}}</connection-string>
+		<database-name>ToDoList</database-name>
+		<container-name>Todos</container-name>
+	</connection-info>
+	<query-request>
+		<sql-statement> 
+            SELECT * from ToDoList
+        </sql-statement>
+	</query-request>
+	<response>
+		<set-body template="liquid"> 
+            [ 
+                    
+                    {% for todo in body.items %} 
+                        {"id": "{{ todo.id }}", 
+                        "title": "{{ todo.title}}",
+                        "status": "{{ todo.status}}"}
+                        {% if forloop.last == false %},{% endif %} 
+                    {% endfor %} 
+                ] 
+        </set-body>
+	</response>
+</cosmosdb-data-source>
+
+//Mutation - createTodoItem
+<cosmosdb-data-source>
+	<connection-info>
+		<connection-string>{{CosmosDBConnectionString}}</connection-string>
+		<database-name>ToDoList</database-name>
+		<container-name>Todos</container-name>
+	</connection-info>
+	<write-request type="upsert">
+		<partition-key>@(context.GraphQL.Arguments["input"]["id"].ToString())</partition-key>
+		<set-body>
+            @(context.GraphQL.Arguments["input"].ToString())
+        </set-body>
+	</write-request>
+</cosmosdb-data-source>
+
+//Mutation - deleteTodoItem
+<cosmosdb-data-source>
+	<connection-info>
+		<connection-string>{{CosmosDBConnectionString}}</connection-string>
+		<database-name>ToDoList</database-name>
+		<container-name>Todos</container-name>
+	</connection-info>
+	<delete-request>
+		<id>
+            @(context.GraphQL.Arguments["id"].ToString())
+        </id>
+		<partition-key>
+            @(context.GraphQL.Arguments["id"].ToString())
+        </partition-key>
+	</delete-request>
+</cosmosdb-data-source>
